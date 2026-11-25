@@ -1,0 +1,20 @@
+{
+  "name": "data-msqt-fun",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5184 --strictPort",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 5184 --strictPort",
+    "sync-sdk": "bash scripts/sync-sdk.sh"
+  },
+  "dependencies": {
+    "@wtop/provider": "file:vendor/wtop/provider",
+    "jsonata": "^2.0.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11"
+  }
+}

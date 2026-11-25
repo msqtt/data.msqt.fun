@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>数据仓库 · data.msqt.fun</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>数据仓库</h1>
+      <span id="status" class="badge" data-state="idle">初始化…</span>
+      <span class="badge">IndexedDB · 数据不出浏览器</span>
+    </header>
+    <p id="origin-warn" class="message err hidden" style="padding: 8px 20px; margin: 0;">
+      ⚠ 当前 iframe 无同源权限：请以 allow-same-origin 注册到 HOST（注册弹窗勾选），否则 IndexedDB 不可用。
+    </p>
+    <main class="layout">
+      <section class="pane">
+        <label>集合</label>
+        <div class="meta">
+          <input id="col-name" type="text" placeholder="集合名（可新建）" />
+          <button id="col-open" class="btn small">打开</button>
+        </div>
+        <div id="collections"></div>
+        <div class="meta"><span id="current-col">未选择集合</span><button id="refresh" class="btn small">刷新</button></div>
+        <hr />
+        <label>导入文件（JSON / CSV）</label>
+        <input id="import-file" type="file" accept=".json,.csv,application/json,text/csv" />
+        <button id="import-run" class="btn small">导入到当前集合</button>
+        <div class="meta">
+          <button id="export-json" class="btn small">导出 JSON</button>
+          <button id="export-csv" class="btn small">导出 CSV</button>
+        </div>
+        <button id="drop" class="btn small danger">删除当前集合</button>
+        <p class="hint">嵌入 HOST 与独立访问共享同一 origin 的同一份数据。</p>
+      </section>
+      <section class="pane">
+        <label>查询（JSONata filter，逐条取真）</label>
+        <input id="query-filter" type="text" placeholder="如 age > 21 且 city = '北京' → age > 21 and city = '北京'" />
+        <div class="meta">
+          <input id="query-sort" type="text" placeholder="排序字段" style="width: 90px;" />
+          <select id="query-order"><option value="asc">asc</option><option value="desc">desc</option></select>
+          <button id="query-run" class="btn small primary">查询</button>
+        </div>
+        <div id="records"></div>
+        <div class="meta">
+          <span id="rec-count">0 条</span>
+          <button id="prev" class="btn small">上一页</button>
+          <span id="page-info">—</span>
+          <button id="next" class="btn small">下一页</button>
+        </div>
+      </section>
+      <section class="pane">
+        <label>记录编辑（JSON）</label>
+        <textarea id="editor" placeholder='选择左侧记录，或点「新建记录」输入 JSON…'></textarea>
+        <div class="meta">
+          <button id="add-new" class="btn small">新建记录</button>
+          <button id="save" class="btn small primary">保存</button>
+          <button id="delete" class="btn small danger">删除</button>
+        </div>
+        <details>
+          <summary class="tool-title">JSONata 变换（transform）</summary>
+          <label>数据 JSON <textarea id="tf-data" class="mini">[1, 2, 3]</textarea></label>
+          <label>表达式 <input id="tf-expr" type="text" value="$sum(data)" /></label>
+          <button id="tf-run" class="btn small">求值</button>
+          <textarea id="tf-out" class="mini" readonly></textarea>
+        </details>
+        <details>
+          <summary class="tool-title">CSV 解析（csvParse）</summary>
+          <textarea id="csv-in" class="mini" placeholder="name,age&#10;bob,30"></textarea>
+          <button id="csv-parse" class="btn small">解析</button>
+          <textarea id="csv-out" class="mini" readonly></textarea>
+        </details>
+        <details>
+          <summary class="tool-title">转 CSV（csvFormat）</summary>
+          <textarea id="csvfmt-in" class="mini" placeholder='[{"name":"bob","age":30}]'></textarea>
+          <button id="csvfmt-run" class="btn small">转 CSV</button>
+          <textarea id="csvfmt-out" class="mini" readonly></textarea>
+        </details>
+        <p id="message" class="message"></p>
+      </section>
+    </main>
+    <footer class="foot">纯前端 IndexedDB 存储 + JSONata 处理 · 支持 WTOP 协议接入 <a href="https://recycle.msqt.fun">可回收编排站</a></footer>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

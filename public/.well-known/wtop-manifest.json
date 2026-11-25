@@ -1,0 +1,252 @@
+{
+  "protocolVersion": "1.0",
+  "name": "data-tool",
+  "displayName": "数据仓库",
+  "version": "1.0.0",
+  "viewport": { "width": 1100, "height": 720 },
+  "methods": [
+    {
+      "name": "collections",
+      "displayName": "集合列表",
+      "mode": "headless",
+      "stateless": true,
+      "timeoutMs": 30000,
+      "input": { "type": "object", "properties": {} },
+      "output": {
+        "type": "object",
+        "required": ["collections"],
+        "properties": {
+          "collections": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "count"],
+              "properties": { "name": { "type": "string" }, "count": { "type": "integer" } }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "put",
+      "displayName": "写入记录",
+      "mode": "headless",
+      "stateless": true,
+      "timeoutMs": 30000,
+      "input": {
+        "type": "object",
+        "required": ["collection", "records"],
+        "properties": {
+          "collection": { "type": "string", "minLength": 1 },
+          "records": { "type": "array", "items": { "type": "object" }, "minItems": 1 },
+          "idField": { "type": "string", "default": "id" },
+          "mode": { "enum": ["upsert", "insert"], "default": "upsert", "description": "insert 遇已存在 id 报错" }
+        }
+      },
+      "output": {
+        "type": "object",
+        "required": ["inserted", "updated", "ids"],
+        "properties": {
+          "inserted": { "type": "integer" },
+          "updated": { "type": "integer" },
+          "ids": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    {
+      "name": "get",
+      "displayName": "读取记录",
+      "mode": "headless",
+      "stateless": true,
+      "timeoutMs": 30000,
+      "input": {
+        "type": "object",
+        "required": ["collection", "id"],
+        "properties": { "collection": { "type": "string", "minLength": 1 }, "id": { "type": "string" } }
+      },
+      "output": {
+        "type": "object",
+        "required": ["record"],
+        "properties": { "record": { "type": "object" } }
+      }
+    },
+    {
+      "name": "query",
+      "displayName": "查询",
+      "mode": "headless",
+      "stateless": true,
+      "timeoutMs": 30000,
+      "input": {
+        "type": "object",
+        "required": ["collection"],
+        "properties": {
+          "collection": { "type": "string", "minLength": 1 },
+          "filter": { "type": "string", "description": "JSONata 表达式，逐条求值取真" },
+          "sort": { "type": "string", "description": "排序字段" },
+          "order": { "enum": ["asc", "desc"], "default": "asc" },
+          "limit": { "type": "integer", "minimum": 1, "maximum": 10000, "default": 100 },
+          "offset": { "type": "integer", "minimum": 0, "default": 0 }
+        }
+      },
+      "output": {
+        "type": "object",
+        "required": ["records", "total", "count"],
+        "properties": {
+          "records": { "type": "array", "items": { "type": "object" } },
+          "total": { "type": "integer", "description": "过滤后总数" },
+          "count": { "type": "integer", "description": "本页条数" }
+        }
+      }
+    },
+    {
+      "name": "delete",
+      "displayName": "删除记录",
+      "mode": "headless",
+      "stateless": true,
+      "timeoutMs": 30000,
+      "input": {
+        "type": "object",
+        "required": ["collection"],
+        "properties": {
+          "collection": { "type": "string", "minLength": 1 },
+          "ids": { "type": "array", "items": { "type": "string" } },
+          "filter": { "type": "string", "description": "JSONata；与 ids 二选一" }
+        }
+      },
+      "output": {
+        "type": "object",
+        "required": ["deleted"],
+        "properties": { "deleted": { "type": "integer" } }
+      }
+    },
+    {
+      "name": "drop",
+      "displayName": "删除集合",
+      "mode": "headless",
+      "stateless": true,
+      "timeoutMs": 30000,
+      "input": {
+        "type": "object",
+        "required": ["collection"],
+        "properties": { "collection": { "type": "string", "minLength": 1 } }
+      },
+      "output": {
+        "type": "object",
+        "required": ["deleted"],
+        "properties": { "deleted": { "type": "integer" } }
+      }
+    },
+    {
+      "name": "transform",
+      "displayName": "JSONata 变换",
+      "mode": "headless",
+      "stateless": true,
+      "timeoutMs": 30000,
+      "input": {
+        "type": "object",
+        "required": ["data", "expression"],
+        "properties": {
+          "data": { "description": "任意 JSON 数据" },
+          "expression": { "type": "string", "minLength": 1, "description": "JSONata，求值上下文 {data}" }
+        }
+      },
+      "output": {
+        "type": "object",
+        "required": ["result"],
+        "properties": { "result": {} }
+      }
+    },
+    {
+      "name": "csvParse",
+      "displayName": "CSV 解析",
+      "mode": "headless",
+      "stateless": true,
+      "timeoutMs": 30000,
+      "input": {
+        "type": "object",
+        "properties": {
+          "csv": { "type": "string", "description": "CSV 文本（与 file 二选一）" },
+          "file": { "type": "string", "format": "wtop-file" },
+          "delimiter": { "type": "string", "default": "," },
+          "header": { "type": "boolean", "default": true, "description": "首行为表头" }
+        }
+      },
+      "output": {
+        "type": "object",
+        "required": ["records", "count"],
+        "properties": {
+          "records": { "type": "array", "items": { "type": "object" } },
+          "count": { "type": "integer" }
+        }
+      }
+    },
+    {
+      "name": "csvFormat",
+      "displayName": "转 CSV",
+      "mode": "headless",
+      "stateless": true,
+      "timeoutMs": 30000,
+      "input": {
+        "type": "object",
+        "required": ["records"],
+        "properties": {
+          "records": { "type": "array", "items": { "type": "object" } },
+          "columns": { "type": "array", "items": { "type": "string" }, "description": "缺省取全部字段并集" },
+          "delimiter": { "type": "string", "default": "," },
+          "header": { "type": "boolean", "default": true }
+        }
+      },
+      "output": {
+        "type": "object",
+        "required": ["csv"],
+        "properties": { "csv": { "type": "string" } }
+      }
+    },
+    {
+      "name": "export",
+      "displayName": "导出集合",
+      "mode": "headless",
+      "stateless": true,
+      "timeoutMs": 60000,
+      "input": {
+        "type": "object",
+        "required": ["collection"],
+        "properties": {
+          "collection": { "type": "string", "minLength": 1 },
+          "filter": { "type": "string" },
+          "format": { "enum": ["json", "csv"], "default": "json" }
+        }
+      },
+      "output": {
+        "type": "object",
+        "required": ["file", "count"],
+        "properties": {
+          "file": { "type": "string", "format": "wtop-file" },
+          "count": { "type": "integer" }
+        }
+      }
+    },
+    {
+      "name": "import",
+      "displayName": "导入文件",
+      "mode": "headless",
+      "stateless": true,
+      "timeoutMs": 60000,
+      "input": {
+        "type": "object",
+        "required": ["collection", "file"],
+        "properties": {
+          "collection": { "type": "string", "minLength": 1 },
+          "file": { "type": "string", "format": "wtop-file" },
+          "format": { "enum": ["auto", "json", "csv"], "default": "auto" },
+          "idField": { "type": "string", "default": "id" }
+        }
+      },
+      "output": {
+        "type": "object",
+        "required": ["imported"],
+        "properties": { "imported": { "type": "integer" } }
+      }
+    }
+  ]
+}
