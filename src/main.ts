@@ -31,6 +31,30 @@ const provider = createProvider({
     'http://127.0.0.1:5179',
   ],
   autoHandshake: false,
+  mirror: {
+    start: ({ method }) => ok(`HOST 调用 ${method}…`),
+    result: ({ method, data }) => {
+      const r = data as Record<string, unknown>;
+      if (method === 'transform') {
+        $<HTMLTextAreaElement>('tf-out').value = JSON.stringify(r.result, null, 2);
+        ok('HOST 求值完成');
+        return;
+      }
+      if (method === 'csvParse') {
+        $<HTMLTextAreaElement>('csv-out').value = JSON.stringify(r.records, null, 2);
+        ok(`HOST 解析 ${r.count} 条`);
+        return;
+      }
+      if (method === 'csvFormat') {
+        $<HTMLTextAreaElement>('csvfmt-out').value = String(r.csv ?? '');
+        ok('HOST 转换完成');
+        return;
+      }
+      ok(`HOST ${method} 完成`);
+      void (async () => { await refreshCollections(); if (currentCol) await runQuery(); })().catch(fail);
+    },
+    error: ({ error }) => fail(new Error(`[${error.code}] ${error.message}`)),
+  },
 });
 for (const [name, fn] of Object.entries(OPS)) provider.registerMethod(name, async (p) => fn(p as never));
 
